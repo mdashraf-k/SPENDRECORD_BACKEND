@@ -1,14 +1,15 @@
 from fastapi import FastAPI
 from databases.database import engine, Base
-import models
+from routers import auth, users
 
 app = FastAPI()
 
-@app.get("/health")
+@app.get("/")
 def health_check():
-    return "Health Good!!!"
+    return "Go to /docs"
 
 
 Base.metadata.create_all(bind=engine)
 
-# app.include_router(file name)
+app.include_router(auth.router)
+app.include_router(users.router)
