@@ -15,8 +15,9 @@ def add_user(db: Session, name:str, email: str, username: str, password_hash: st
     return user
 
 def get_user_info(db: Session, user):
-    user_data = db.query(User).filter(User.id == user.get("id")).first()
+    user_data = db.query(User).filter(User.id == user.id).first()
     dict_user_data = {
+        "id": user_data.id,
         "name": user_data.name,
         "username": user_data.username,
         "email": user_data.email,

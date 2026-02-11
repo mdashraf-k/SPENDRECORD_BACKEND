@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from typing import Annotated
-from dependencies import get_db, password_hash
+from dependencies import db
 from schemas.users import UsersCreate
 from crud.users import add_user
 from sqlalchemy.orm import Session
@@ -11,16 +11,14 @@ from sqlalchemy import or_
 from datetime import timedelta, datetime, timezone
 from jose import jwt, JWTError
 from core.config import settings
+from utils import security
 
 
 
 router = APIRouter(
     prefix="/auth",
-    tags=["auth"]
+    tags=["Auth"]
 )
-
-
-
 
 
 
@@ -32,7 +30,7 @@ class Token(BaseModel):
 #     identifier: str   
 #     password: str
 
-db_dependency = Annotated[Session, Depends(get_db.get_db)]
+db_dependency = Annotated[Session, Depends(db.get_db)]
 
 def authenticate_user(identifier: str, password: str, db):
     user = db.query(User).filter(
@@ -44,7 +42,7 @@ def authenticate_user(identifier: str, password: str, db):
 
     if not user:
         return False
-    if not password_hash.bcrypt_context.verify(password, user.password_hash):
+    if not security.bcrypt_context.verify(password, user.password_hash):
         return False
     return user
 
@@ -56,13 +54,10 @@ def create_access_token(username: str, user_id: int):
     
 
 
-    
-
-
 @router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_user(db: db_dependency, create_user_request: UsersCreate):
     
-    hash_password = password_hash.bcrypt_context.hash(create_user_request.password)
+    hash_password = security.bcrypt_context.hash(create_user_request.password)
 
     return add_user(
         db = db,

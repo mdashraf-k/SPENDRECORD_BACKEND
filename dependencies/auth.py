@@ -3,6 +3,7 @@ from typing import Annotated
 from jose import jwt, JWTError
 from fastapi.security import OAuth2PasswordBearer
 from core.config import settings
+from schemas.auth import CurrentUser
 
 
 
@@ -17,6 +18,9 @@ def get_current_user(token: Annotated[str, Depends(oauth2_bearer)]):
 
         if username is None or user_id is None:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate user.")
-        return {"username": username, "id": user_id}
+        return CurrentUser(id = user_id, username = username )
     except JWTError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate user.")
+    
+    
+current_user = Annotated[dict, Depends(get_current_user)]

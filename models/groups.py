@@ -8,6 +8,7 @@ class Group(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String(50), nullable=False)
+    description = Column(String(200))
     created_by = Column(Integer, ForeignKey("users.id"), index=True, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 

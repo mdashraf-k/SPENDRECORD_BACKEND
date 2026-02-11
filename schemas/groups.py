@@ -3,6 +3,7 @@ from datetime import datetime
  
 class GroupsCreate(BaseModel):
     name: str = Field(min_length=3, max_length=50)
+    description: str = Field(max_length=200)
 
 
 class GroupsOut(BaseModel):
@@ -12,4 +13,4 @@ class GroupsOut(BaseModel):
     created_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
