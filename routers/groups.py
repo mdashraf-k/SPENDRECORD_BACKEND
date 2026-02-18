@@ -6,7 +6,7 @@ from schemas.groups import GroupsCreate
 
 
 router = APIRouter(
-    prefix="/group",
+    prefix="/groups",
     tags=["Groups"]
 )
 

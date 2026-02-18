@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Response
 from pydantic import BaseModel
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from typing import Annotated
@@ -12,6 +12,7 @@ from datetime import timedelta, datetime, timezone
 from jose import jwt, JWTError
 from core.config import settings
 from utils import security
+from schemas.auth import LoginSchema
 
 
 
@@ -67,13 +68,30 @@ async def create_user(db: db_dependency, create_user_request: UsersCreate):
         password_hash = hash_password
     )
 
-@router.post("/token", response_model=Token)
-async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: db_dependency):
-    user = authenticate_user(identifier = form_data.username, password=form_data.password, db= db)
+@router.post("/login")
+async def login(data: LoginSchema, response: Response, db: db_dependency):
+    user = authenticate_user(identifier = data.identifier, password=data.password, db= db)
 
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate user.")
     
     token = create_access_token(user.username, user.id)
 
-    return {"access_token": token, "token_type": "bearer"}
+    response.set_cookie(
+        key="access_token",
+        value=token,
+        httponly=True,
+        secure=False,  # True in production
+        samesite="lax",
+        max_age=60 * 30
+    )
+
+    return {"message": "Login successful"}
+
+@router.post("/logout")
+def logout(response: Response):
+    response.delete_cookie(
+        key="access_token",
+        path="/"
+    )
+    return {"message": "Logged out"}

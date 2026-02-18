@@ -1,8 +1,22 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from databases.database import engine, Base
 from routers import auth, users, groups, group_members, spends
 
 app = FastAPI()
+
+origins = [
+    "http://localhost:5173"
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 @app.get("/")
 def health_check():
@@ -16,3 +30,5 @@ app.include_router(users.router)
 app.include_router(groups.router)
 app.include_router(group_members.router)
 app.include_router(spends.router)
+
+# uvicorn main:app --host localhost --port 8080 --reload

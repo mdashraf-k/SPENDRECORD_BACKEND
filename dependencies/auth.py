@@ -1,4 +1,4 @@
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status, Request
 from typing import Annotated
 from jose import jwt, JWTError
 from fastapi.security import OAuth2PasswordBearer
@@ -7,10 +7,18 @@ from schemas.auth import CurrentUser
 
 
 
-oauth2_bearer = OAuth2PasswordBearer(tokenUrl="auth/token")
+
 
 # Decode current User and used them every where
-def get_current_user(token: Annotated[str, Depends(oauth2_bearer)]):
+def get_current_user(request: Request):
+    token = request.cookies.get("access_token")
+
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated"
+        )
+    
     try:
         payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
         username: str = payload.get("sub")
