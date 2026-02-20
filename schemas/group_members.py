@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field
 from datetime import datetime
+from schemas.users import UsersOut
 
 
 class GroupMemberAdd(BaseModel):
@@ -12,10 +13,11 @@ class GroupMemberUpdate(BaseModel):
 
 
 class GroupMemberOut(BaseModel):
-    user_id: int
+    user: UsersOut
     role: str
     is_active: bool
     group_id: int
+    joined_at: datetime
 
     class Config:
         from_attributes = True

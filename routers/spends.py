@@ -1,8 +1,9 @@
 from fastapi import APIRouter, status, HTTPException
 from dependencies import DB, current_user
-from schemas.spends import SpendsCreate
+from schemas.spends import SpendsCreate, SpendsOut
 from crud.spends import add_spend, get_spends
 from crud.helping_crud import is_group_member
+from typing import List
 
 router = APIRouter(
     prefix="/spend",
@@ -10,8 +11,7 @@ router = APIRouter(
 )
 
 
-
-@router.get("/{group_id}", status_code=status.HTTP_200_OK)
+@router.get("/{group_id}", status_code=status.HTTP_200_OK, response_model=List[SpendsOut])
 async def get_all_spends(db:DB, group_id:int, user:current_user):
     # Checking is the person group member
     # print(is_group_member(db=db, group_id=group_id, user_id=user.id))
@@ -19,11 +19,6 @@ async def get_all_spends(db:DB, group_id:int, user:current_user):
         raise HTTPException(status_code=403, detail="You are not the member of this Group!")
     
     return get_spends(db=db, group_id=group_id)
-
-
-
-
-
 
 
 @router.post("/{group_id}/spend", status_code=status.HTTP_200_OK)

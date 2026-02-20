@@ -1,6 +1,8 @@
 from fastapi import APIRouter, status, HTTPException
 from dependencies import DB, current_user
 from crud.group_members import get_all_member, add_member, remove_from_group
+from schemas.group_members import GroupMemberOut
+from typing import List
 
 
 router = APIRouter(
@@ -10,7 +12,7 @@ router = APIRouter(
 
 
 # def is_group_member(db, current_user, group)
-@router.get("/{group_id}", status_code=status.HTTP_200_OK)
+@router.get("/{group_id}", status_code=status.HTTP_200_OK, response_model=List[GroupMemberOut])
 async def get_all_members(db:DB, group_id:int, current_user: current_user):
     # 1️⃣ check user is member of this group
     all_member = get_all_member(db=db, group_id=group_id, user_id=current_user.id)

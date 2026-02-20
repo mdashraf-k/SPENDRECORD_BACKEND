@@ -10,27 +10,17 @@ class UsersCreate(BaseModel):
 
 class UsersOut(BaseModel):
     id: int
-    name: EmailStr
-    email: str
+    name: str
+    email: EmailStr
     username: str
 
     class Config:
         from_attributes = True
 
-
-
-
-
 class UserDetailsUpdate(BaseModel):
     name: Optional[str] = Field(default=None, min_length=3, max_length=50)
     email: Optional[EmailStr] = Field(default=None, min_length=5, max_length=250)
     username: Optional[str] = Field(default=None, min_length=5, max_length=50)
-
-
-
-
-
-
 
 class PasswordUpdate(BaseModel):
     old_password: str

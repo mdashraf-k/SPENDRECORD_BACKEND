@@ -1,8 +1,28 @@
 from sqlalchemy.orm import Session
+from sqlalchemy import or_
 from models.users import User
+from fastapi import HTTPException
 
 
 def add_user(db: Session, name:str, email: str, username: str, password_hash: str):
+    existing_users = db.query(User).filter(
+        or_(User.email == email,
+        User.username == username)
+    ).all()
+
+    errors = {}
+
+    for existing in existing_users:
+        if existing .email == email:
+            errors["email"] = "Email already exists"
+        if existing .username == username:
+            errors["username"] = "Username already exists"
+    
+    if errors:
+        raise HTTPException(
+            status_code=400,
+            detail=errors
+        )
     user = User(
         name = name,
         email = email,
@@ -14,16 +34,24 @@ def add_user(db: Session, name:str, email: str, username: str, password_hash: st
     db.refresh(user)
     return user
 
+
 def get_user_info(db: Session, user):
+    # db.query(User).filter(User.id == user.id).first()
     user_data = db.query(User).filter(User.id == user.id).first()
-    dict_user_data = {
-        "id": user_data.id,
-        "name": user_data.name,
-        "username": user_data.username,
-        "email": user_data.email,
-        "created_date_time": user_data.created_at
-    }
-    return dict_user_data
+    if not user_data:
+        raise HTTPException(
+            status_code=404,
+            detail="User not found"
+        )
+    return user_data
+    # dict_user_data = {
+    #     "id": user_data.id,
+    #     "name": user_data.name,
+    #     "username": user_data.username,
+    #     "email": user_data.email,
+    #     "created_date_time": user_data.created_at
+    # }
+    # return dict_user_data
 
 
 def update_user_info(

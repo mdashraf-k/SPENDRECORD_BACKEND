@@ -3,7 +3,7 @@ from typing import Annotated
 from dependencies import DB, current_user
 from utils.security import bcrypt_context
 from models.users import User
-from schemas.users import PasswordUpdate, UserDetailsUpdate
+from schemas.users import PasswordUpdate, UserDetailsUpdate, UsersOut
 from crud.users import update_user_password, update_user_info, get_user_info
 
 
@@ -13,24 +13,13 @@ router = APIRouter(
 )
 
 
-
-
-
-
-@router.get("/", status_code= status.HTTP_200_OK)
+@router.get("/", status_code= status.HTTP_200_OK, response_model= UsersOut)
 async def get_user_details(user: current_user, db: DB):
     # print(user)
     if user is None:
-        return HTTPException(status_code=402, detail="Authentication Failed")
+        return HTTPException(status_code=401, detail="Authentication Failed")
     
     return get_user_info(db=db, user=user)
-
-
-
-
-
-
-
 
 @router.put("/edit_info", status_code=status.HTTP_200_OK)
 async def edit_user_info(user: current_user, db: DB, new_user_info: UserDetailsUpdate):

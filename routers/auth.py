@@ -55,18 +55,32 @@ def create_access_token(username: str, user_id: int):
     
 
 
-@router.post("/", status_code=status.HTTP_201_CREATED)
-async def create_user(db: db_dependency, create_user_request: UsersCreate):
+@router.post("/signup", status_code=status.HTTP_201_CREATED)
+async def create_user(db: db_dependency, response: Response, create_user_request: UsersCreate):
     
     hash_password = security.bcrypt_context.hash(create_user_request.password)
 
-    return add_user(
+    user = add_user(
         db = db,
         name = create_user_request.name,
         email = create_user_request.email,
         username = create_user_request.username,
         password_hash = hash_password
     )
+
+    token = create_access_token(user.username, user.id)
+
+    response.set_cookie(
+        key="access_token",
+        value=token,
+        httponly=True,
+        secure=False,  # True in production
+        samesite="lax",
+        max_age=60 * 30
+    )
+
+    return {"message": "Login successful"}
+
 
 @router.post("/login")
 async def login(data: LoginSchema, response: Response, db: db_dependency):

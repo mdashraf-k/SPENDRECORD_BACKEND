@@ -31,4 +31,4 @@ app.include_router(groups.router)
 app.include_router(group_members.router)
 app.include_router(spends.router)
 
-# uvicorn main:app --host localhost --port 8080 --reload
+# uvicorn main:app --host localhost --port 8000 --reload
