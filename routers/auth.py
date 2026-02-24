@@ -14,7 +14,7 @@ from core.config import settings
 from utils import security
 from schemas.auth import LoginSchema
 
-
+expire = datetime.utcnow() + timedelta(days=30)
 
 router = APIRouter(
     prefix="/auth",
@@ -74,9 +74,10 @@ async def create_user(db: db_dependency, response: Response, create_user_request
         key="access_token",
         value=token,
         httponly=True,
-        secure=False,  # True in production
-        samesite="lax",
-        max_age=60 * 30
+        secure=True,  # True in production
+        samesite=None,
+        max_age=60 * 60 * 24 * 30,
+        expires=expire
     )
 
     return {"message": "Login successful"}
