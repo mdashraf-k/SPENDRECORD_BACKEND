@@ -6,7 +6,9 @@ from routers import auth, users, groups, group_members, spends
 app = FastAPI()
 
 origins = [
-    "http://localhost:5173"
+    "http://localhost:5173",   # your Vite dev
+    "https://spendrecord.in",
+    "https://www.spendrecord.in"
 ]
 
 app.add_middleware(

@@ -17,7 +17,7 @@ router = APIRouter(
 async def get_user_details(user: current_user, db: DB):
     # print(user)
     if user is None:
-        return HTTPException(status_code=401, detail="Authentication Failed")
+        raise HTTPException(status_code=401, detail="Authentication Failed")
     
     return get_user_info(db=db, user=user)
 
