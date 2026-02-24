@@ -53,6 +53,13 @@ def get_user_info(db: Session, user):
     # }
     # return dict_user_data
 
+def searched_data(db: Session, query: str):
+    return db.query(User).filter(
+        or_(
+            User.email.ilike(f"%{query}%"),
+            User.username.ilike(f"%{query}%")
+        )
+    ).all()
 
 def update_user_info(
         db: Session, 
@@ -62,7 +69,20 @@ def update_user_info(
         username: str | None = None
         ):
     
+    existing_user = db.query(User).filter(User.id != user_id,
+    or_(
+        User.email == email,
+        User.username == username
+    )).first()
+
+    if existing_user:
+        if existing_user.email == email:
+            raise HTTPException(400, "Email already exists")
+        if existing_user.username == username:
+            raise HTTPException(400, "Username already exists")
+        
     user = db.query(User).filter(User.id == user_id).first()
+    
 
     if user is None:
         return None
