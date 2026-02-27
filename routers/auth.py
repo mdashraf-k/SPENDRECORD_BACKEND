@@ -4,7 +4,7 @@ from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from typing import Annotated
 from dependencies import db
 from schemas.users import UsersCreate
-from crud.users import add_user
+from crud.users import add_user, user_exist_or_not
 from sqlalchemy.orm import Session
 from models.users import User
 from sqlalchemy import or_
@@ -13,6 +13,8 @@ from jose import jwt, JWTError
 from core.config import settings
 from utils import security
 from schemas.auth import LoginSchema
+from google.oauth2 import id_token
+from google.auth.transport import requests
 
 expire = datetime.utcnow() + timedelta(days=30)
 
@@ -52,7 +54,45 @@ def create_access_token(username: str, user_id: int):
     expires = datetime.now(timezone.utc) + timedelta(days=settings.access_token_expire_days)
     encode = {"sub": username, "id": user_id, "exp": expires}
     return jwt.encode(encode, settings.secret_key, algorithm=settings.algorithm)
+
+
+@router.post("/google", status_code=status.HTTP_200_OK)
+async def verify_user_by_google(db: db_dependency, response: Response, google_token: dict):
     
+    try:
+        idInfo = id_token.verify_oauth2_token(google_token["token"], requests.Request(), settings.google_clientid)
+
+        email = idInfo["email"]
+        name = idInfo["name"]
+
+    except ValueError as e:
+        # print(e)
+        raise HTTPException(status_code=401, detail="Invalid Google Token")
+
+    user = user_exist_or_not(db=db,email=email)
+
+    if not user:
+        # Signup automatically
+        user = add_user(
+        db = db,
+        name = name,
+        email = email,
+        username = email.split("@")[0],
+        password_hash = "google_oauth"
+        )
+    
+    token = create_access_token(user.username, user.id)
+
+    response.set_cookie(
+        key="access_token",
+        value=token,
+        httponly=True,
+        secure=True,  # True in production
+        samesite=None,
+        max_age=60 * 60 * 24 * 30
+    )
+
+    return {"message": "Google Login successful"}
 
 
 @router.post("/signup", status_code=status.HTTP_201_CREATED)
@@ -98,7 +138,7 @@ async def login(data: LoginSchema, response: Response, db: db_dependency):
         httponly=True,
         secure=False,  # True in production
         samesite="lax",
-        max_age=60 * 30
+        max_age=24 * 60 * 60 * 30
     )
 
     return {"message": "Login successful"}

@@ -6,7 +6,8 @@ from routers import auth, users, groups, group_members, spends
 app = FastAPI()
 
 origins = [
-    "http://localhost:5173",   # your Vite dev
+    "http://localhost:5173",
+    "http://192.168.1.5:5173",   # your Vite dev
     "https://spendrecord.in",
     "https://www.spendrecord.in"
 ]
@@ -33,4 +34,3 @@ app.include_router(groups.router)
 app.include_router(group_members.router)
 app.include_router(spends.router)
 
-# uvicorn main:app --host localhost --port 8000 --reload

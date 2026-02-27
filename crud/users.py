@@ -34,6 +34,9 @@ def add_user(db: Session, name:str, email: str, username: str, password_hash: st
     db.refresh(user)
     return user
 
+# Checking user exists or not
+def user_exist_or_not(db:Session, email):
+    return db.query(User).filter(User.email == email).first()
 
 def get_user_info(db: Session, user):
     # db.query(User).filter(User.id == user.id).first()
