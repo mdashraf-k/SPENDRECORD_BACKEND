@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 from models.group_members import GroupMembers
+from models.groups import Group
 
 
 
@@ -24,16 +25,24 @@ def is_group_admin(db:Session, group_id:int, user_id:int, admin_id:int) -> bool:
 
 def add_member(db: Session, group_id: int, user_id: int, admin_id:int):
     if (is_group_admin(db=db, group_id=group_id, user_id=user_id, admin_id=admin_id) == False):
-        return None
+        return "Not a Group Admin"
 
-    group_members = GroupMembers(
+    existing_member = db.query(GroupMembers).filter(
+    GroupMembers.group_id == group_id,
+    GroupMembers.user_id == user_id
+    ).first()
+
+    if existing_member:
+        return "Already a member of Group"
+    
+    new_members = GroupMembers(
         group_id = group_id,
         user_id = user_id,
     )
-    db.add(group_members)
+    db.add(new_members)
     db.commit()
-    db.refresh(group_members)
-    return group_members
+    db.refresh(new_members)
+    return new_members
 
 def remove_from_group(db: Session, group_id:int, user_id:int):
     is_member = db.query(GroupMembers).filter(GroupMembers.group_id == group_id, GroupMembers.user_id == user_id, GroupMembers.is_active == True)

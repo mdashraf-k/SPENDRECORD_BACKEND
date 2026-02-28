@@ -7,7 +7,7 @@ app = FastAPI()
 
 origins = [
     "http://localhost:5173",
-    "http://192.168.1.5:5173",   # your Vite dev
+    "http://192.168.1.23:5173",   # your Vite dev
     "https://spendrecord.in",
     "https://www.spendrecord.in"
 ]
