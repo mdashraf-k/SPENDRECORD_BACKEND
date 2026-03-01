@@ -1,7 +1,6 @@
 from fastapi import APIRouter, status, HTTPException
 from dependencies import DB, current_user
-from crud.groups import create_groups, get_users_groups
-from crud.groups import add_admin_as_members, edit_group_info, is_group_admin
+from crud.groups import add_admin_as_members, edit_group_info, is_group_admin, create_groups, get_users_groups, group_delete
 from schemas.groups import GroupsCreate
 
 
@@ -22,26 +21,18 @@ async def get_all_groups(user: current_user, db: DB):
         user=user
     )
 
-
-
-
-
 @router.put("/{group_id}/edit", status_code=status.HTTP_200_OK)
 async def edit_group(db: DB, user: current_user, group_id: int, group_edit_request: GroupsCreate):
     if user is None:
         return HTTPException(status_code=402, detail="Authentication Failed")
     
     if not is_group_admin(db=db, group_id=group_id, user_id=user.id):
-        raise HTTPException(status_code=402, detail="Authentication Failed")
+        raise HTTPException(status_code=402, detail="Not a Group Admin")
     
     return edit_group_info(db=db, group_id=group_id, name=group_edit_request.name, description=group_edit_request.description)
 
 
-
-
-
-
-@router.post("/create_group")
+@router.post("/create_group", status_code=status.HTTP_201_CREATED)
 async def create_group(user: current_user, db: DB, group_create_request: GroupsCreate):
     if user is None:
         return HTTPException(status_code=402, detail="Authentication Failed")
@@ -61,3 +52,14 @@ async def create_group(user: current_user, db: DB, group_create_request: GroupsC
         user_id=user.id,
         role="admin"
     )
+
+@router.delete("/delete/{group_id}", status_code=status.HTTP_200_OK)
+async def delete_group(user: current_user, db:DB, group_id:int):
+    if user is None:
+        return HTTPException(status_code=402, detail="Authentication Failed")
+    
+    # Checking Is the user is Group Admin
+    if not is_group_admin(db=db, group_id=group_id, user_id=user.id):
+        raise HTTPException(status_code=402, detail="Not a Group Admin")
+    
+    group_delete(db=db, group_id=group_id)
