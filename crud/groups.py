@@ -64,3 +64,13 @@ def add_admin_as_members(db: Session, group_id: int, user_id: int, role: str):
     db.refresh(group_members)
     return group_members
 
+# this function delete the group if user is admin
+def group_delete(db: Session, group_id:int):
+    group_for_delete = db.query(Group).filter(Group.id == group_id).first()
+
+    if not group_for_delete:
+        return None
+    
+    db.delete(group_for_delete)
+    db.commit()
+    return True
