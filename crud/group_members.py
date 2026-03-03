@@ -6,7 +6,7 @@ from models.groups import Group
 
 def get_all_member(db: Session, group_id:int, user_id:int):
     # print(group_id, user_id)
-    is_member = db.query(GroupMembers).filter(GroupMembers.group_id == group_id, GroupMembers.user_id == user_id, GroupMembers.is_active == True)
+    is_member = db.query(GroupMembers).filter(GroupMembers.group_id == group_id, GroupMembers.user_id == user_id, GroupMembers.is_active == True).first()
 
     if not is_member:
         return None
@@ -33,7 +33,13 @@ def add_member(db: Session, group_id: int, user_id: int, admin_id:int):
     ).first()
 
     if existing_member:
-        return "Already a member of Group"
+        if not existing_member.is_active:
+            existing_member.is_active = True
+
+            db.commit()
+            db.refresh(existing_member)
+
+        return existing_member
     
     new_members = GroupMembers(
         group_id = group_id,

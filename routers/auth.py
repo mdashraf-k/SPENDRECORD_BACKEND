@@ -16,7 +16,7 @@ from schemas.auth import LoginSchema
 from google.oauth2 import id_token
 from google.auth.transport import requests
 
-expire = datetime.utcnow() + timedelta(days=30)
+expire = datetime.now(timezone.utc) + timedelta(days=30)
 
 router = APIRouter(
     prefix="/auth",

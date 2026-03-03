@@ -1,5 +1,5 @@
 from databases.database import Base
-from sqlalchemy import Integer, Column, ForeignKey, String, DateTime, Boolean, func
+from sqlalchemy import Integer, Column, ForeignKey, String, DateTime, Boolean, func, UniqueConstraint
 from sqlalchemy.orm import relationship
 
 
@@ -16,3 +16,8 @@ class GroupMembers(Base):
 
     group = relationship("Group")
     user = relationship("User")
+
+    # 👇 Prevents duplicate rows for the same user in the same group
+    __table_args__ = (
+        UniqueConstraint('group_id', 'user_id', name='_group_user_uc'),
+    )
